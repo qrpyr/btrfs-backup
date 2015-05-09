@@ -123,3 +123,52 @@ for d in "${dirs[@]}"; do
     $cmd $args $d $destdir$d
 done
 ```
+
+Systemd Timer
+=============
+
+create a bash script for backup
+
+create btrfs-backup.service in /usr/local/lib/systemd/user/ or /home/<USERNAME>/.config/systemd/
+
+```[Unit]
+Description=Btrfs Backup
+
+[Service]
+Nice=19
+IOSchedulingClass=2
+IOSchedulingPriority=7
+ExecStart=<PATH TO BASH SCRIPT>
+#Type=oneshot
+```
+
+create btrfs-backup.timer
+
+```[Unit]
+Description=Btrfs Backup
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=3h
+
+[Install]
+WantedBy=timers.target
+```
+
+use
+
+    # systemctl --user start btrfs-backup```
+
+and/or
+
+    # systemctl --user enable btrfs-backup.timer```
+
+
+Sudo
+====
+
+use visudo to allow a user to generate snapshots ...
+
+    <USERNAME> ALL=(root) NOPASSWD: /sbin/btrfs
+
+TODO: make optional
