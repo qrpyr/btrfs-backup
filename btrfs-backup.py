@@ -38,7 +38,7 @@ def datestr(timestamp=None):
 
 def new_snapshot(disk, snapshotdir, snapshotprefix, readonly=True):
     snaploc = os.path.join(snapshotdir, snapshotprefix + datestr())
-    command = ['btrfs', 'subvolume', 'snapshot']
+    command = ['sudo', 'btrfs', 'subvolume', 'snapshot']
     if readonly:
         command += ['-r']
     command += [disk, snaploc]
@@ -48,7 +48,7 @@ def new_snapshot(disk, snapshotdir, snapshotprefix, readonly=True):
         return snaploc
     except CalledProcessError:
         print("Error on command:", str(command), file=sys.stderr)
-        return None    
+        return None
 
 def send_snapshot(srcloc, destloc, prevsnapshot=None, debug=False):
     if debug:
@@ -56,12 +56,12 @@ def send_snapshot(srcloc, destloc, prevsnapshot=None, debug=False):
     else:
         flags = []
 
-    srccmd = ['btrfs', 'send'] + flags
+    srccmd = ['sudo', 'btrfs', 'send'] + flags
     if prevsnapshot:
         srccmd += ['-p', prevsnapshot]
     srccmd += [srcloc]
 
-    destcmd = ['btrfs', 'receive'] + flags + [destloc]
+    destcmd = ['sudo', 'btrfs', 'receive'] + flags + [destloc]
 
     #print(srccmd)
     #print(destcmd)
@@ -76,21 +76,21 @@ def find_old_backup(bak_dir_time_objs,recurse_val = 0):
     """ Find oldest time object in "bak_dir_time_objs" structure.
         recurse_val = 0 -> start with top entry "year", default
     """
-    
+
     tmp = []
     for timeobj in bak_dir_time_objs:
         tmp.append(timeobj[recurse_val])
-    
+
     min_val = min(tmp) # find minimum time value
     new_timeobj = []
 
     for timeobj in bak_dir_time_objs:
         if(timeobj[recurse_val] == min_val):
             new_timeobj.append(timeobj)
-    
+
     if (len(new_timeobj) > 1):
         return find_old_backup(new_timeobj,recurse_val+1) # recursive call from year to minute
-    else:        
+    else:
         return new_timeobj[0]
 
 def delete_old_backups(backuploc, max_num_backups):
@@ -120,7 +120,7 @@ def delete_old_backups(backuploc, max_num_backups):
         delete_snapshot(bak_dir_to_remove_path)
 
 def delete_snapshot(snaploc):
-    subprocess.check_output(('btrfs', 'subvolume', 'delete', snaploc))
+    subprocess.check_output(('sudo', 'btrfs', 'subvolume', 'delete', snaploc))
 
 if __name__ == "__main__":
     # Parse command line arguments
